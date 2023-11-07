@@ -1,5 +1,5 @@
 """ pyosplus
-    Version 1.0.0 (2023-11-05)
+    Version 1.1.0 (2023-11-07)
     Copyright (c) 2023 Evgenii Shirokov
     MIT License
 """
@@ -13,8 +13,8 @@ from os.path import exists, isdir, isfile, join, samefile, splitext
 
 def count_in_dir(
         directory: str,
+        scan_subdirs: bool,
         ignored_exts: list[str] | str = [],
-        scan_subdirs: bool = True,
         ) -> tuple[int, int, dict]:
     """Return numbers of objects in a directory.
 
@@ -22,13 +22,13 @@ def count_in_dir(
     ---------
     `directory: str`
       Directory to scan.
+    `scan_subdirs: bool`
+      To scan subdirectories (`True`) or not (`False`).
     `ignored_exts: list[str] | str = []`
       Extension(s) of files to be ignored.
       Each extension should start with `.` (dot).
       Extension checks are always case-insensitive
       (e.g., `".jpg"` is the same as `".JPG"`).
-    `scan_subdirs: bool = True`
-      To scan subdirectories (`True`) or not (`False`).
 
     Returns
     -------
@@ -42,7 +42,8 @@ def count_in_dir(
     ```
     from pyosplus import count_in_dir
     directory = "/path/to/dir"
-    num_dirs, num_files, ext_count = count_in_dir(directory)
+    scan_subdirs = True
+    num_dirs, num_files, ext_count = count_in_dir(directory, scan_subdirs)
     ```
     """
     if not isinstance(ignored_exts, list):
@@ -70,7 +71,7 @@ def count_in_dir(
 def ext_files(
         directory: str,
         extensions: str | list[str],
-        scan_subdirs: bool = False,
+        scan_subdirs: bool,
         ) -> list[str]:
     """Return paths to files with given extensions in a directory.
 
@@ -83,7 +84,7 @@ def ext_files(
       Each extension should start with `.` (dot).
       Extension checks are always case-insensitive
       (e.g., `".jpg"` is the same as `".JPG"`).
-    `scan_subdirs: bool = False`
+    `scan_subdirs: bool`
       To scan subdirectories (`True`) or not (`False`).
 
     Returns
@@ -267,6 +268,131 @@ def inc_name(
     return result
 
 
+def write_dir_tree(
+        directories: str | list[str],
+        html_file: str,
+        print_exts: bool = True,
+        num_spaces: int = 4,
+        shrunk_dirs: str | list[str] = [],
+        shrunk_depth: int = -1,
+        shrunk_text: str = " &lt;...&gt;",
+        ignored_exts: str | list[str] = [],
+        ignored_paths: str | list[str] = [],
+        print_root: bool = True,
+        print_hr: bool = True,
+        ):
+    """Write an HTML file with a directory tree structure.
+
+    Arguments
+    ---------
+    `directories: str | list[str]`
+      Directory/directories to scan.
+    `html_file: str`
+      Path to a new HTML file for output. If it exists,
+      it will be overwritten.
+    `print_exts: bool = True`
+      Print file extensions (`True`) or not (`False`).
+    `num_spaces: int = 4`
+      Number of spaces for indentation.
+    `shrunk_dirs: str | list[str] = []`
+      Path(s) to the specific directories to be shrunk
+      (i.e., collapsed) in HTML.
+    `shrunk_depth: int = -1`
+      The depth (i.e., hierarchy level) from which all
+      the directories should be shrunk (collapsed) in HTML.
+      The depth of `directories` equals 0.
+      `shrunk_depth = -1` means that no directories should
+      be shrunk except those in `shrunk_dirs` (if any).
+    `shrunk_text: str = " &lt;...&gt;"`
+      The text to be put next to a shrunk directory name.
+    `ignored_exts: str | list[str] = []`
+      Extensions of files to be ignored in HTML. Such files will
+      not be visible in HTML at all. Each extension should start
+      with `.` (dot). Extension checks are always case-insensitive
+      (e.g., ".jpg" is the same as ".JPG").
+    `ignored_paths: str | list[str] = []`
+      Paths to the directories/files to be ignored.
+      Unlike the shrunk directories, `ignored_paths` will not
+      be visible in HTML at all.
+    `print_root: bool = True`
+      Print a root directory (`True`) or not (`False`).
+    `print_hr: bool = True`
+      Print a horizontal line (`True`) or not (`False`).
+
+    Returns
+    -------
+      `None`. Writes a directory tree structure to `html_file`.
+
+    Minimal Example
+    ---------------
+    ```
+    from pyosplus import write_dir_tree
+    directories = ["/path/to/dir_1", "/path/to/dir_2"]
+    html_file = "tree.html"
+    write_dir_tree(directories, html_file)
+    ```
+    """
+
+    def recursive_scan(d_path, depth):
+        # Shrink the directory if necessary
+        if any(samefile(d_path, dd) for dd in shrunk_dirs) or \
+                (shrunk_depth > 0 and depth >= shrunk_depth):
+            result[-1] += shrunk_text
+            return
+        # Ignore the directory if necessary
+        if any(samefile(d_path, dd) for dd in ignored_paths):
+            del result[-1]
+            return
+        # List directories and files separately
+        dirs, files = [], []
+        for entry in sorted(listdir(d_path)):
+            path = join(d_path, entry)
+            if isdir(path):
+                code = "<b>" + escape(entry) + "</b>"
+                dirs.append((code, path))
+            else:
+                root, ext = splitext(entry)
+                # Ignore the file if necessary
+                if (ext.lower() in ignored_exts_lc) \
+                        or any(samefile(path, dd) for dd in ignored_paths):
+                    continue
+                # Do not print extensions if necessary
+                file_name = entry if print_exts else root
+                files.append((escape(file_name), path))
+        # Run recursively
+        indent = depth * num_spaces * "&nbsp;"
+        for entry, path in files + dirs:
+            result.append(f"{indent}{entry}")
+            if isdir(path):
+                recursive_scan(path, depth + 1)
+
+    if not isinstance(directories, list):
+        directories = [directories]
+    if not isinstance(ignored_exts, list):
+        ignored_exts = [ignored_exts]
+    if not isinstance(ignored_paths, list):
+        ignored_paths = [ignored_paths]
+    if not isinstance(shrunk_dirs, list):
+        shrunk_dirs = [shrunk_dirs]
+    ignored_exts_lc = [ext.lower() for ext in ignored_exts]
+    html = ('''<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8" />\n'''
+            '''<style>\nmark{background-color: Gainsboro;}\n</style>\n'''
+            '''</head>\n<body>\n<samp>\n''')
+    num_dirs = len(directories)
+    for i, d in enumerate(directories):
+        if print_root:
+            html += "<b><mark>" + escape(d) + "</mark></b><br />\n"
+        result = []
+        recursive_scan(d, 0)
+        if result:
+            html += "<br />\n".join(result) + "<br />\n"
+        if print_hr and (i != num_dirs - 1):
+            html += "<hr />\n"
+    html += '''</samp>\n</body>\n</html>\n'''
+    with open(html_file, "w", encoding="utf_8") as f:
+        f.write(html)
+
+
 def write_html_dir_tree(
         directory: str,
         html_file: str,
@@ -360,6 +486,8 @@ def write_html_dir_tree(
             if isdir(path):
                 recursive_scan(path, depth + 1)
 
+    print('''Function `write_html_dir_tree` is deprecated and '''
+          '''will be removed soon. Use `write_dir_tree` instead.''')
     if not isinstance(shrunk_dirs, list):
         shrunk_dirs = [shrunk_dirs]
     if not isinstance(ignored_dirs, list):

@@ -10,7 +10,7 @@ This Python package provides several useful functions based on `os`/`os.path`:
 
 * [`inc_name`](#inc_name)
 
-* [`write_html_dir_tree`](#write_html_dir_tree)
+* [`write_dir_tree`](#write_dir_tree)
 
 These functions are really primitive but they happen to be used quite often by some people.
 
@@ -34,8 +34,8 @@ pip install pyosplus
 ```python
 count_in_dir(
     directory: str,
+    scan_subdirs: bool,
     ignored_exts: list[str] | str = [],
-    scan_subdirs: bool = True,
     ) -> tuple[int, int, dict]
 ```
 
@@ -44,11 +44,11 @@ count_in_dir(
 * `directory: str`  
     Directory to scan.
 
+* `scan_subdirs: bool`  
+    To scan subdirectories (`True`) or not (`False`).
+
 * `ignored_exts: list[str] | str = []`  
     Extension(s) of files to be ignored. Each extension should start with `.` (dot). Extension checks are always case-insensitive (e.g., `".jpg"` is the same as `".JPG"`).
-
-* `scan_subdirs: bool = True`  
-    To scan subdirectories (`True`) or not (`False`).
 
 **Returns**
 
@@ -60,7 +60,8 @@ count_in_dir(
 ```python
 from pyosplus import count_in_dir
 directory = "/path/to/dir"
-num_dirs, num_files, ext_count = count_in_dir(directory)
+scan_subdirs = True
+num_dirs, num_files, ext_count = count_in_dir(directory, scan_subdirs)
 ```
 
 --------
@@ -71,7 +72,7 @@ num_dirs, num_files, ext_count = count_in_dir(directory)
 ext_files(
     directory: str,
     extensions: str | list[str],
-    scan_subdirs: bool = False,
+    scan_subdirs: bool,
     ) -> list[str]
 ```
 
@@ -83,7 +84,7 @@ ext_files(
 * `extensions: str | list[str]`  
     Extension(s) of files to search. Each extension should start with `.` (dot). Extension checks are always case-insensitive (e.g., `".jpg"` is the same as `".JPG"`).
 
-* `scan_subdirs: bool = False`  
+* `scan_subdirs: bool`  
     To scan subdirectories (`True`) or not (`False`).
 
 **Returns**
@@ -218,7 +219,78 @@ It returns:
 
 --------
 
+### `write_dir_tree`
+
+```python
+write_dir_tree(
+    directories: str | list[str],
+    html_file: str,
+    print_exts: bool = True,
+    num_spaces: int = 4,
+    shrunk_dirs: str | list[str] = [],
+    shrunk_depth: int = -1,
+    shrunk_text: str = " &lt;...&gt;",
+    ignored_exts: str | list[str] = [],
+    ignored_paths: str | list[str] = [],
+    print_root: bool = True,
+    print_hr: bool = True,
+    )
+```
+
+**Arguments**
+
+
+* `directories: str | list[str]`  
+    Directory/directories to scan.
+
+* `html_file: str`  
+    Path to a new HTML file for output. If it exists, it will be overwritten.
+
+* `print_exts: bool = True`  
+    Print file extensions (`True`) or not (`False`).
+
+* `num_spaces: int = 4`  
+    Number of spaces for indentation.
+
+* `shrunk_dirs: str | list[str] = []`  
+    Path(s) to the specific directories to be shrunk (i.e., collapsed) in HTML.
+
+* `shrunk_depth: int = -1`  
+    The depth (i.e., hierarchy level) from which all the directories should be shrunk (collapsed) in HTML. The depth of `directories` equals 0. `shrunk_depth = -1` means that no directories should be shrunk except those in `shrunk_dirs` (if any).
+
+* `shrunk_text: str = " &lt;...&gt;"`  
+    The text to be put next to a shrunk directory name.
+
+* `ignored_exts: str | list[str] = []`  
+    Extensions of files to be ignored in HTML. Such files will not be visible in HTML at all. Each extension should start with `.` (dot). Extension checks are always case-insensitive (e.g., ".jpg" is the same as ".JPG").
+
+* `ignored_paths: str | list[str] = []`  
+    Paths to the directories/files to be ignored. Unlike the shrunk directories, `ignored_paths` will not be visible in HTML at all.
+
+* `print_root: bool = True`  
+    Print a root directory (`True`) or not (`False`).
+
+* `print_hr: bool = True`  
+    Print a horizontal line (`True`) or not (`False`).
+
+**Returns**
+
+* `None`. Writes a directory tree structure to `html_file`.
+
+**Minimal Example**
+
+```python
+from pyosplus import write_dir_tree
+directories = ["/path/to/dir_1", "/path/to/dir_2"]
+html_file = "tree.html"
+write_dir_tree(directories, html_file)
+```
+
+--------
+
 ### `write_html_dir_tree`
+
+Note: this function is deprecated and will be removed soon. Use `write_dir_tree` instead.
 
 ```python
 write_html_dir_tree(
@@ -286,13 +358,18 @@ write_html_dir_tree(directory, html_file)
 
 ## Changelog
 
+* Version 1.1.0 (2023-11-07):
+    * function `write_dir_tree` added,
+    * function `write_html_dir_tree` deprecated,
+    * the default values of `scan_subdirs` in functions `count_in_dir` and `ext_files` removed.
+
 * Version 1.0.0 (2023-11-05): initial release
 
 --------
 
 **pyosplus**
 
-Version 1.0.0 (2023-11-05)
+* Version 1.1.0 (2023-11-07)
 
 Copyright (c) 2023 Evgenii Shirokov
 
