@@ -288,75 +288,10 @@ write_dir_tree(directories, html_file)
 
 --------
 
-### `write_html_dir_tree`
-
-Note: this function is deprecated and will be removed soon. Use `write_dir_tree` instead.
-
-```python
-write_html_dir_tree(
-    directory: str,
-    html_file: str,
-    num_spaces: int = 4,
-    shrunk_dirs: str | list[str] = [],
-    shrunk_depth: int = -1,
-    shrunk_text: str = " &lt;...&gt;",
-    ignored_dirs: str | list[str] = [],
-    print_exts: bool = True,
-    ignored_exts: str | list[str] = [],
-    before: str = None,
-    after: str = "",
-    )
-```
-
-**Arguments**
-
-* `directory: str`  
-    Directory to scan.
-
-* `html_file: str`  
-    Path to a new HTML file for output.
-
-* `num_spaces: int = 4`  
-    Number of spaces for indentation.
-
-* `shrunk_dirs: str | list[str] = []`  
-    Path(s) to the specific directories to be shrunk (i.e., collapsed) in HTML.
-
-* `shrunk_depth: int = -1`  
-    The depth (i.e., hierarchy level) from which all directories to be shrunk (collapsed) in HTML. The depth of `directory` equals 0. `shrunk_depth = -1` means that no directories are shrunk except those in `shrunk_dirs` (if any).
-
-* `shrunk_text: str = " &lt;...&gt;"`  
-    The text to be put next to a shrunk directory name.
-
-* `ignored_dirs: str | list[str] = []`  
-    Paths to the directories to be ignored. Unlike the shrunk directories, `ignored_dirs` are not visible in HTML at all.
-
-* `print_exts: bool = True`  
-    Print file extensions (`True`) or not (`False`).
-
-* `ignored_exts: str | list[str] = []`  
-    Extensions of files to be ignored in HTML. Such files are not visible in HTML at all.
-
-* `before: str = None`  
-    The text before tree structure, `None` means `directory`.
-
-* `after: str = ""`  
-    The text after tree structure, `None` means `directory`.
-
-**Returns**
-
-* `None`; writes a directory tree structure to `html_file`.
-
-**Minimal Example**
-
-```python
-from pyosplus import write_html_dir_tree
-directory = "/path/to/dir"
-html_file = "tree.html"
-write_html_dir_tree(directory, html_file)
-```
-
 ## Changelog
+
+* Version 1.2.0 (2023-11-11):
+    * function `write_html_dir_tree` removed.
 
 * Version 1.1.0 (2023-11-07):
     * function `write_dir_tree` added,
@@ -369,7 +304,7 @@ write_html_dir_tree(directory, html_file)
 
 **pyosplus**
 
-* Version 1.1.0 (2023-11-07)
+* Version 1.2.0 (2023-11-11)
 
 Copyright (c) 2023 Evgenii Shirokov
 
