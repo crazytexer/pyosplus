@@ -233,6 +233,7 @@ write_dir_tree(
     ignored_exts: str | list[str] = [],
     ignored_paths: str | list[str] = [],
     print_root: bool = True,
+    captions: list[str] = [],
     print_hr: bool = True,
     )
 ```
@@ -270,6 +271,9 @@ write_dir_tree(
 * `print_root: bool = True`  
     Print a root directory (`True`) or not (`False`).
 
+* `captions: list[str] = []`  
+    List of captions to appear before the tree for each directory from `directories`. If `captions` are not empty, the lengths of `captions` and `directories` should be equal so there exists a caption for each directory (in the same order as in these lists).
+
 * `print_hr: bool = True`  
     Print a horizontal line (`True`) or not (`False`).
 
@@ -290,6 +294,9 @@ write_dir_tree(directories, html_file)
 
 ## Changelog
 
+* Version 1.3.0 (2023-12-23)
+    * argument `captions` added to `write_dir_tree`.
+
 * Version 1.2.0 (2023-11-11):
     * function `write_html_dir_tree` removed.
 
@@ -304,7 +311,7 @@ write_dir_tree(directories, html_file)
 
 **pyosplus**
 
-* Version 1.2.0 (2023-11-11)
+* Version 1.3.0 (2023-12-23)
 
 Copyright (c) 2023 Evgenii Shirokov
 

@@ -1,5 +1,5 @@
 """ pyosplus
-    Version 1.2.0 (2023-11-11)
+    Version 1.3.0 (2023-12-23)
     Copyright (c) 2023 Evgenii Shirokov
     MIT License
 """
@@ -279,6 +279,7 @@ def write_dir_tree(
         ignored_exts: str | list[str] = [],
         ignored_paths: str | list[str] = [],
         print_root: bool = True,
+        captions: list[str] = [],
         print_hr: bool = True,
         ):
     """Write an HTML file with a directory tree structure.
@@ -316,6 +317,11 @@ def write_dir_tree(
       be visible in HTML at all.
     `print_root: bool = True`
       Print a root directory (`True`) or not (`False`).
+    `captions: list[str] = []`
+      List of captions to appear before the tree for each directory
+      from `directories`. If `captions` are not empty, the lengths of
+      `captions` and `directories` should be equal so there exists a
+      caption for each directory (in the same order as in these lists).
     `print_hr: bool = True`
       Print a horizontal line (`True`) or not (`False`).
 
@@ -374,6 +380,9 @@ def write_dir_tree(
         ignored_paths = [ignored_paths]
     if not isinstance(shrunk_dirs, list):
         shrunk_dirs = [shrunk_dirs]
+    if captions and (len(captions) != len(directories)):
+        raise ValueError("Lengths of `captions` and `directories` "
+                         "should be equal.")
     ignored_exts_lc = [ext.lower() for ext in ignored_exts]
     html = ('''<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8" />\n'''
             '''<style>\nmark{background-color: Gainsboro;}\n</style>\n'''
@@ -382,6 +391,8 @@ def write_dir_tree(
     for i, d in enumerate(directories):
         if print_root:
             html += "<b><mark>" + escape(d) + "</mark></b><br />\n"
+        if captions:
+            html += "<b><mark>" + escape(captions[i]) + "</mark></b><br />\n"
         result = []
         recursive_scan(d, 0)
         if result:
